@@ -2,12 +2,12 @@
     <div class="grid grid-cols-2 py-4 border-b border-gray-200 dark:border-gray-800 text-gray-900 dark:text-gray-100">
         <div class="flex items-center justify-between">
             <div class="flex items-center space-x-1">
-                <UIcon name="i-heroicons-arrow-up-right" class="text-green-600" />
-                <div>Salary</div>
+                <UIcon :name="icon" :class="[iconColor]" />
+                <div>{{ transaction.description }}</div>
             </div>
 
             <div>
-                <UBadge color="neutral" variant="outline">Category</UBadge>
+                <UBadge color="neutral" v-if="transaction.category" variant="outline">{{ transaction.category }}</UBadge>
             </div>
         </div>
 
@@ -23,8 +23,33 @@
 </template>
 
 <script setup lang="ts">
+type TransactionType = 'Income' | 'Expense'
 
-const { currency } = useCurrency(3000)
+interface Transaction {
+    id: number;
+    created_at: string;
+    amount: number;
+    type: TransactionType;
+    description: string;
+    category?: string;
+}
+
+const props = defineProps<{
+    transaction: Transaction
+}>()
+
+const { currency } = useCurrency(props.transaction.amount);
+
+const isIncome = computed(() => props.transaction.type === 'Income');
+
+const icon = computed(
+    () => isIncome.value ? 'i-heroicons-arrow-up-right' : 'i-heroicons-arrow-down-left'
+);
+
+const iconColor = computed(
+    () => isIncome.value ? 'text-green-600' : 'text-red-600'
+);
+
 const items = [
     [
         {
