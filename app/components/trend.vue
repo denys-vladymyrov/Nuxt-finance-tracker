@@ -24,16 +24,8 @@
 </template>
 
 <script setup lang="ts">
-
-import {useCurrency} from "~/composables/useCurrency";
-
-interface TrendProps {
-    title: string
-    amount: number
-    lastAmount: number
-    color: 'green' | 'red'
-    loading?: boolean
-}
+import { useCurrency } from "~/composables/useCurrency";
+import { type TrendProps } from "~/types";
 
 const props = defineProps<TrendProps>();
 

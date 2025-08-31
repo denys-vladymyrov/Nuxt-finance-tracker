@@ -23,20 +23,9 @@
 </template>
 
 <script setup lang="ts">
-type TransactionType = 'Income' | 'Expense'
+import { type TransactionProps  } from '~/types'
 
-interface Transaction {
-    id: number;
-    created_at: string;
-    amount: number;
-    type: TransactionType;
-    description: string;
-    category?: string;
-}
-
-const props = defineProps<{
-    transaction: Transaction
-}>()
+const props = defineProps<TransactionProps>()
 
 const { currency } = useCurrency(props.transaction.amount);
 

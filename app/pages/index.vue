@@ -20,33 +20,47 @@
     </section>
 
     <section>
-        <Transaction
-            v-for="transaction in transactions"
-            :key="transaction.id"
-            :transaction="transaction"
-        />
+        <div v-for="(transactionsOnDay, date) in transactionsGroupedByDate" :key="date" class="mb-10">
+            <DailyTransactionSummary :date="date" :transactions="transactionsOnDay" />
+            <Transaction v-for="transaction in transactionsOnDay" :key="transaction.id" :transaction="transaction" />
+        </div>
     </section>
 </template>
 
-<script setup>
+<script setup lang="ts">
 
 import { transactionViewOptions } from '~/constants';
+import { type ITransaction } from '~/types';
 
 const supabase = useSupabaseClient();
 
 const selectedView = ref(transactionViewOptions[1]);
-const transactions = ref([]);
+const transactions = ref<ITransaction[]>([])
 
-const { data, pending } = await useAsyncData('transactions', async () => {
-    const { data, error } = await supabase
-        .from('transactions')
-        .select();
+const { data, pending } = await useAsyncData<ITransaction[]>('transactions', async () => {
+    const { data, error } = await supabase.from('transactions').select();
 
     if (error) return [];
 
-    return data;
+    return (data ?? []) as ITransaction[];
 })
 
-transactions.value = data.value;
+transactions.value = data.value ?? [];
+
+const transactionsGroupedByDate = computed<Record<string, ITransaction[]>>(() => {
+    const grouped: Record<string, ITransaction[]> = {};
+
+    for (const transaction of transactions.value.sort((a, b) => a.id - b.id)) {
+        const date = new Date(transaction.created_at).toISOString().split('T')[0]!;
+
+        if (!grouped[date]) {
+            grouped[date] = [];
+        }
+
+        grouped[date].push(transaction);
+    }
+
+    return grouped;
+});
 
 </script>
