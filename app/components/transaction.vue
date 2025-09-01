@@ -15,7 +15,12 @@
             <div>{{ currency }}</div>
             <div>
                 <UDropdownMenu :items="items" :popper="{ placement: 'bottom-start' }">
-                    <UButton color="neutral" variant="ghost" trailing-icon="i-heroicons-ellipsis-horizontal" />
+                    <UButton
+                        color="neutral"
+                        variant="ghost"
+                        trailing-icon="i-heroicons-ellipsis-horizontal"
+                        :loading="isLoading"
+                    />
                 </UDropdownMenu>
             </div>
         </div>
@@ -25,9 +30,11 @@
 <script setup lang="ts">
 import { type TransactionProps  } from '~/types'
 
-const props = defineProps<TransactionProps>()
+const props = defineProps<TransactionProps>();
 
 const { currency } = useCurrency(props.transaction.amount);
+
+const emit = defineEmits(['deleted']);
 
 const isIncome = computed(() => props.transaction.type === 'Income');
 
@@ -39,6 +46,34 @@ const iconColor = computed(
     () => isIncome.value ? 'text-green-600' : 'text-red-600'
 );
 
+const isLoading = ref(false);
+const toast = useToast();
+const supabase = useSupabaseClient();
+
+const deleteTransaction = async () => {
+    isLoading.value = true
+
+    try {
+        await supabase.from('transactions')
+            .delete()
+            .eq('id', props.transaction.id);
+
+        toast.add({
+            title: 'Transaction deleted',
+            icon: 'i-heroicons-check-circle',
+        })
+
+        emit('deleted', props.transaction.id);
+    } catch (error) {
+        toast.add({
+            title: 'Transaction deleted',
+            icon: 'i-heroicons-exclamation-circle',
+        })
+    } finally {
+        isLoading.value = false;
+    }
+}
+
 const items = [
     [
         {
@@ -49,7 +84,7 @@ const items = [
         {
             label: 'Delete',
             icon: 'i-heroicons-trash-20-solid',
-            onSelect: () => console.log('Delete')
+            onSelect: deleteTransaction
         }
     ]
 ]
