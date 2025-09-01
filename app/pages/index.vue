@@ -27,7 +27,7 @@
             </div>
         </div>
         <div>
-            <UButton icon="i-heroicons-plus-circle" color="neutral" variant="solid" label="Add" />
+            <TransactionModal v-model="isOpen" />
         </div>
     </section>
 
@@ -55,6 +55,8 @@ import { type ITransaction, TransactionTypeEnum } from '~/types';
 const supabase = useSupabaseClient();
 
 const selectedView = ref(transactionViewOptions[1]);
+
+const isOpen = ref(false);
 
 const {
     data: transactions,
