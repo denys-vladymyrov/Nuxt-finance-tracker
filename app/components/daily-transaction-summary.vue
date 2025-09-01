@@ -12,7 +12,7 @@
 </template>
 
 <script setup lang="ts">
-import { type DailyTransactionProps } from '~/types';
+import { type DailyTransactionProps, TransactionTypeEnum } from '~/types';
 
 const props = defineProps<DailyTransactionProps>();
 
@@ -20,7 +20,7 @@ const sum = computed(() => {
     let sum = 0;
 
     for (const transaction of props.transactions) {
-        if (transaction.type === 'Income') {
+        if (transaction.type === TransactionTypeEnum.Income) {
             sum += transaction.amount;
         } else {
             sum -= transaction.amount;

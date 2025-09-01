@@ -1,5 +1,10 @@
 export type TransactionType = 'Income' | 'Expense';
 
+export enum TransactionTypeEnum {
+    Income = 'Income',
+    Expense = 'Expense',
+}
+
 export interface ITransaction {
     id: number
     created_at: string
