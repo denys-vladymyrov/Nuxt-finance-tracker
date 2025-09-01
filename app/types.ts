@@ -1,4 +1,6 @@
-export type TransactionType = 'Income' | 'Expense';
+import { TRANSACTIONS, CATEGORIES } from './constants';
+
+export type TransactionType = typeof TRANSACTIONS[number];
 
 export enum TransactionTypeEnum {
     Income = 'Income',
