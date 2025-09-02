@@ -57,20 +57,32 @@ const emit = defineEmits<{
 
 const isOpen = computed<boolean>({
     get: () => props.modelValue,
-    set: (value) => emit('update:modelValue', value),
+    set: (value) => {
+        if (!value) resetForm()
+        emit('update:modelValue', value)
+    }
 });
 
 type LocalTransaction = Omit<ITransaction, 'id' | 'type'> & {
     type?: TransactionType
 }
 
-const state = ref<LocalTransaction>({
+const initialState: LocalTransaction = {
     created_at: '',
     amount: 0,
     type: undefined,
     description: '',
     category: undefined
+}
+
+const state = ref<LocalTransaction>({
+    ...initialState
 });
+
+const resetForm = () => {
+    state.value = { ...initialState };
+    form.value.clear();
+}
 
 const defaultSchema = z.object({
     created_at: z.string()
@@ -90,7 +102,7 @@ const expenseSchema = z.object({
 });
 const investmentSchema = z.object({
     type: z.literal('Investment')
-})
+});
 const savingSchema = z.object({
     type: z.literal('Saving')
 });
@@ -102,6 +114,6 @@ const schema = z.intersection(
 const form = ref<FormSchema>();
 
 const save = async () => {
-    form.value.validate();
-}
+    if (form.value.errors.length) return;
+};
 </script>
