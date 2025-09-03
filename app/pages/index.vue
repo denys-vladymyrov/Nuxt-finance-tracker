@@ -27,7 +27,7 @@
             </div>
         </div>
         <div>
-            <TransactionModal v-model="isOpen" />
+            <TransactionModal v-model="isOpen" @saved="refreshTransactions" />
         </div>
     </section>
 
@@ -65,11 +65,15 @@ const {
 } = await useAsyncData<ITransaction[]>(
     'transactions',
     async () => {
-        const { data, error } = await supabase.from('transactions').select().order('created_at', { ascending: true })
+        const { data, error } = await supabase.from('transactions').select().order('created_at', { ascending: false })
         if (error) return []
         return data ?? []
     }
 )
+
+const Save = () => {
+    console.log('save');
+};
 
 const transactionsGroupedByDate = computed<Record<string, ITransaction[]>>(() => {
     const grouped: Record<string, ITransaction[]> = {};

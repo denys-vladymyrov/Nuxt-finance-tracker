@@ -27,7 +27,7 @@
                         <USelect placeholder="Category" :items="[...CATEGORIES]" class="w-full" v-model="state.category" />
                     </UFormField>
 
-                    <UButton type="submit" color="neutral" variant="solid" label="Save" />
+                    <UButton type="submit" color="neutral" variant="solid" label="Save" :loading="isLoading" />
                 </UForm>
             </UCard>
         </template>
@@ -47,12 +47,14 @@ import {type ITransaction, type TransactionType, TransactionTypeEnum} from '~/ty
 import { TRANSACTIONS, CATEGORIES } from '~/constants';
 import type {FormSchema} from "#ui/types/form";
 
+
 const props = defineProps<{
     modelValue: boolean
 }>();
 
 const emit = defineEmits<{
     (e: 'update:modelValue', value: boolean): void
+    (e: 'saved'): void
 }>();
 
 const isOpen = computed<boolean>({
@@ -112,8 +114,42 @@ const schema = z.intersection(
 );
 
 const form = ref<FormSchema>();
+const isLoading = ref(false);
+const supabase = useSupabaseClient()
+const toast = useToast()
 
 const save = async () => {
-    if (form.value.errors.length) return;
+    emit('saved');
+
+    if (form.value.errors.length) return
+
+    isLoading.value = true
+    try {
+        const { error } = await supabase.from('transactions')
+            .upsert({ ...state.value as any })
+
+        if (!error) {
+            toast.add({
+                'title': 'Transaction saved',
+                'icon': 'i-heroicons-check-circle'
+            })
+
+            isOpen.value = false;
+            emit('saved');
+
+            return;
+        }
+
+        throw error;
+    } catch (e: any) {
+        toast.add({
+            title: 'Transaction not saved',
+            description: e.message,
+            icon: 'i-heroicons-exclamation-circle',
+            color: 'warning'
+        })
+    } finally {
+        isLoading.value = false
+    }
 };
 </script>
