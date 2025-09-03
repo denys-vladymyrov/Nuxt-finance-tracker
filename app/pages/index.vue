@@ -27,18 +27,18 @@
             </div>
         </div>
         <div>
-            <TransactionModal v-model="isOpen" @saved="refreshTransactions" />
+            <TransactionModal v-model="isOpen" @saved="refresh" />
         </div>
     </section>
 
     <section v-if="!pending">
-        <div v-for="(transactionsOnDay, date) in transactionsGroupedByDate" :key="date" class="mb-10">
+        <div v-for="(transactionsOnDay, date) in byDate" :key="date" class="mb-10">
             <DailyTransactionSummary :date="date" :transactions="transactionsOnDay" />
             <Transaction
                 v-for="transaction in transactionsOnDay"
                 :key="transaction.id"
                 :transaction="transaction"
-                @deleted="refreshTransactions"
+                @deleted="refresh"
             />
         </div>
     </section>
@@ -48,67 +48,20 @@
 </template>
 
 <script setup lang="ts">
-
 import { transactionViewOptions } from '~/constants';
-import { type ITransaction, TransactionTypeEnum } from '~/types';
-
-const supabase = useSupabaseClient();
 
 const selectedView = ref(transactionViewOptions[1]);
 
 const isOpen = ref(false);
 
-const {
-    data: transactions,
-    pending,
-    refresh: refreshTransactions
-} = await useAsyncData<ITransaction[]>(
-    'transactions',
-    async () => {
-        const { data, error } = await supabase.from('transactions').select().order('created_at', { ascending: false })
-        if (error) return []
-        return data ?? []
+const { pending, refresh, transactions: {
+    incomeCount,
+    expenseCount,
+    incomeTotal,
+    expenseTotal,
+    grouped: {
+        byDate
     }
-)
-
-const Save = () => {
-    console.log('save');
-};
-
-const transactionsGroupedByDate = computed<Record<string, ITransaction[]>>(() => {
-    const grouped: Record<string, ITransaction[]> = {};
-
-    for (const transaction of transactions.value ?? []){
-        const date = new Date(transaction.created_at).toISOString().split('T')[0]!;
-
-        if (!grouped[date]) {
-            grouped[date] = [];
-        }
-
-        grouped[date].push(transaction);
-    }
-
-    return grouped;
-});
-
-
-// Trends section
-
-const income = computed<ITransaction[] | undefined>(
-    () => transactions.value?.filter(t => t.type === TransactionTypeEnum.Income)
-)
-const expense = computed<ITransaction[] | undefined>(
-    () => transactions.value?.filter(t => t.type === TransactionTypeEnum.Expense)
-)
-
-const incomeCount = computed<number | undefined>(() => income.value?.length)
-const expenseCount = computed<number | undefined>(() => expense.value?.length)
-
-const incomeTotal = computed<number | undefined>(
-    () => income.value?.reduce((sum, transaction) => sum + transaction.amount, 0)
-)
-const expenseTotal = computed<number | undefined>(
-    () => expense.value?.reduce((sum, transaction) => sum + transaction.amount, 0)
-)
+} } = useFetchTransactions();
 
 </script>
