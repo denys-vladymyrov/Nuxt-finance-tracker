@@ -20,7 +20,7 @@ export const useFetchTransactions = (period: Period) => {
         }
     )
 
-    watch(period, async () => await refresh(), { immediate: true });
+    watch(period, async () => await refresh());
 
     const transactionsGroupedByDate = computed<Record<string, ITransaction[]>>(() => {
         const grouped: Record<string, ITransaction[]> = {};
