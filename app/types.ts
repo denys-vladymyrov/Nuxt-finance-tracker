@@ -32,3 +32,8 @@ export interface TrendProps {
 export interface TransactionProps {
     transaction: ITransaction
 }
+
+export type Period = ComputedRef<{
+    from: Date
+    to: Date
+} | undefined>

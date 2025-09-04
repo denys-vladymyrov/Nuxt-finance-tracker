@@ -1,6 +1,6 @@
-import { type ITransaction, TransactionTypeEnum } from "~/types";
+import { type ITransaction, TransactionTypeEnum, type Period } from "~/types";
 
-export const useFetchTransactions = () => {
+export const useFetchTransactions = (period: Period) => {
     const supabase = useSupabaseClient();
 
     const {
@@ -8,13 +8,19 @@ export const useFetchTransactions = () => {
         pending,
         refresh
     } = useAsyncData<ITransaction[]>(
-        'transactions',
+        `transactions-${period.value?.from.toDateString()}-${period.value?.to.toDateString()}`,
         async () => {
-            const { data, error } = await supabase.from('transactions').select().order('created_at', { ascending: false })
+            const { data, error } = await supabase.from('transactions')
+                .select()
+                .gte('created_at', period.value?.from.toISOString())
+                .lte('created_at', period.value?.to.toISOString())
+                .order('created_at', { ascending: false })
             if (error) return []
             return data ?? []
         }
     )
+
+    watch(period, async () => await refresh(), { immediate: true });
 
     const transactionsGroupedByDate = computed<Record<string, ITransaction[]>>(() => {
         const grouped: Record<string, ITransaction[]> = {};
