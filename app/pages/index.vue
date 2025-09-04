@@ -50,9 +50,10 @@
 <script setup lang="ts">
 import { transactionViewOptions } from '~/constants';
 
-const selectedView = ref(transactionViewOptions[1]);
-
+const selectedView = ref(transactionViewOptions[1] ?? "Daily");
 const isOpen = ref(false);
+
+const dates = useSelectedTimePeriod(selectedView);
 
 const { pending, refresh, transactions: {
     incomeCount,
