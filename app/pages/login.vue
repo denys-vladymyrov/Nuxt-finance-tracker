@@ -1,29 +1,45 @@
 <template>
-    <UCard v-if="!success">
-        <template #header>
-            Sign-in to Finance Tracker
-        </template>
+    <ClientOnly v-if="!success">
+        <UCard >
+            <template #header>
+                Sign-in to Finance Tracker
+            </template>
 
-        <form>
-            <UFormField label="Email"
-                        name="email"
-                        class="mb-4"
+            <form @submit.prevent="handleLogin">
+                <UFormField label="Email"
+                            name="email"
+                            class="mb-4"
+                            :required="true"
+                            help="You will receive an email with the confirmation link"
+                >
+                    <UInput
+                        type="email"
+                        placeholder="Email"
                         :required="true"
-                        help="You will receive an email with the confirmation link"
-            >
-                <UInput type="email" placeholder="Email" required class="w-full"/>
-            </UFormField>
+                        class="w-full"
+                        v-model="email"
+                    />
+                </UFormField>
 
-            <UButton type="submit" variant="solid" color="neutral" @click="success = true">Sign-in</UButton>
-        </form>
-    </UCard>
+                <UButton
+                    type="submit"
+                    variant="solid"
+                    color="neutral"
+                    :loading="pending"
+                    :disabled="pending"
+                >
+                    Sign-in
+                </UButton>
+            </form>
+        </UCard>
+    </ClientOnly>
     <UCard v-else>
         <template #header>
             Email has been sent
         </template>
 
         <div class="text-center">
-            <p class="mb-4">We have sent an email to <strong>rmsil@email.com</strong> with a link to sign-in.</p>
+            <p class="mb-4">We have sent an email to <strong>{{ email }}</strong> with a link to sign-in.</p>
             <p>
                 <strong>Important:</strong> The link will expire in 5 minutes.
             </p>
@@ -33,4 +49,37 @@
 
 <script setup lang="ts">
     const success = ref(false);
+    const email = ref('');
+    const pending = ref(false);
+
+    const toast = useToast();
+    const supabase = useSupabaseClient();
+
+    useRedirectIfAuthenticated();
+
+    const handleLogin = async () => {
+        pending.value = true
+
+        try {
+            const { error } = await supabase.auth.signInWithOtp({
+                email: email.value,
+                options: {
+                    emailRedirectTo: 'http://localhost:3000/confirm'
+                }
+            })
+
+            if (error) {
+                toast.add({
+                    title: 'Error authenticating',
+                    icon: 'i-heroicons-exlamation-circle',
+                    description: error.message,
+                    color: 'warning'
+                })
+            } else {
+                success.value = true
+            }
+        } finally {
+            pending.value = false
+        }
+    }
 </script>
