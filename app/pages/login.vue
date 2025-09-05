@@ -48,11 +48,13 @@
 </template>
 
 <script setup lang="ts">
+    import {useAppToast} from "~/composables/useAppToast";
+
     const success = ref(false);
     const email = ref('');
     const pending = ref(false);
 
-    const toast = useToast();
+    const { toastError } = useAppToast();
     const supabase = useSupabaseClient();
 
     useRedirectIfAuthenticated();
@@ -69,11 +71,9 @@
             })
 
             if (error) {
-                toast.add({
+                toastError({
                     title: 'Error authenticating',
-                    icon: 'i-heroicons-exlamation-circle',
                     description: error.message,
-                    color: 'warning'
                 })
             } else {
                 success.value = true

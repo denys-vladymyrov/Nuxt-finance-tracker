@@ -46,6 +46,7 @@ import { z } from 'zod'
 import {type ITransaction, type TransactionType, TransactionTypeEnum} from '~/types';
 import { TRANSACTIONS, CATEGORIES } from '~/constants';
 import type {FormSchema} from "#ui/types/form";
+import {useAppToast} from "~/composables/useAppToast";
 
 
 const props = defineProps<{
@@ -115,8 +116,8 @@ const schema = z.intersection(
 
 const form = ref<FormSchema>();
 const isLoading = ref(false);
-const supabase = useSupabaseClient()
-const toast = useToast()
+const supabase = useSupabaseClient();
+const { toastSuccess, toastError } = useAppToast();
 
 const save = async () => {
     emit('saved');
@@ -129,10 +130,7 @@ const save = async () => {
             .upsert({ ...state.value as any })
 
         if (!error) {
-            toast.add({
-                'title': 'Transaction saved',
-                'icon': 'i-heroicons-check-circle'
-            })
+            toastSuccess({title: 'Transaction saved'});
 
             isOpen.value = false;
             emit('saved');
@@ -142,12 +140,7 @@ const save = async () => {
 
         throw error;
     } catch (e: any) {
-        toast.add({
-            title: 'Transaction not saved',
-            description: e.message,
-            icon: 'i-heroicons-exclamation-circle',
-            color: 'warning'
-        })
+        toastError({title: 'Transaction not saved', description: e.message});
     } finally {
         isLoading.value = false
     }

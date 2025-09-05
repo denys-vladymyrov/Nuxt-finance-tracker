@@ -28,7 +28,8 @@
 </template>
 
 <script setup lang="ts">
-import { type TransactionProps  } from '~/types'
+import { type TransactionProps  } from '~/types';
+import {useAppToast} from "~/composables/useAppToast";
 
 const props = defineProps<TransactionProps>();
 
@@ -47,7 +48,7 @@ const iconColor = computed(
 );
 
 const isLoading = ref(false);
-const toast = useToast();
+const { toastSuccess, toastError } = useAppToast();
 const supabase = useSupabaseClient();
 
 const deleteTransaction = async () => {
@@ -58,17 +59,11 @@ const deleteTransaction = async () => {
             .delete()
             .eq('id', props.transaction.id);
 
-        toast.add({
-            title: 'Transaction deleted',
-            icon: 'i-heroicons-check-circle',
-        })
+        toastSuccess({title: 'Transaction deleted',});
 
         emit('deleted', props.transaction.id);
     } catch (error) {
-        toast.add({
-            title: 'Transaction deleted',
-            icon: 'i-heroicons-exclamation-circle',
-        })
+        toastError({title: 'Transaction was not deleted',});
     } finally {
         isLoading.value = false;
     }
@@ -87,6 +82,6 @@ const items = [
             onSelect: deleteTransaction
         }
     ]
-]
+];
 
 </script>
