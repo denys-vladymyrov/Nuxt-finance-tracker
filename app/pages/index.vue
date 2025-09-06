@@ -5,7 +5,7 @@
         </h1>
         <div>
             <USelectMenu
-                :items="transactionViewOptions"
+                :items="TRANSACTION_VIEW_OPTION"
                 v-model="selectedView"
                 class="w-32"
             />
@@ -48,9 +48,11 @@
 </template>
 
 <script setup lang="ts">
-import { transactionViewOptions } from '~/constants';
+import { TRANSACTION_VIEW_OPTION } from '~/constants';
 
-const selectedView = ref(transactionViewOptions[1] ?? "Daily");
+const user = useSupabaseUser();
+
+const selectedView = ref(user.value?.user_metadata?.transaction_view ?? TRANSACTION_VIEW_OPTION[1])
 const isOpen = ref(false);
 
 const { current, previous } = useSelectedTimePeriod(selectedView);
