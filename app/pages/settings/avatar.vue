@@ -2,7 +2,7 @@
     <div>
         <div class="mb-4">
             <UFormField label="Current avatar" class="w-full" help="This would be blank by default">
-                <UAvatar src="https://avatars.githubusercontent.com/u/739984?v=4" size="3xl" />
+                <UAvatar :src="url" size="3xl" />
             </UFormField>
         </div>
 
@@ -21,6 +21,8 @@
 <script setup>
 const supabase = useSupabaseClient();
 const user = useSupabaseUser();
+
+const { url } = useAvatarUrl();
 
 const { toastSuccess, toastError } = useAppToast();
 

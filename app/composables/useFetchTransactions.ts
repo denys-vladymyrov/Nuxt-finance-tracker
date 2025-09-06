@@ -26,7 +26,7 @@ export const useFetchTransactions = (period: Period) => {
         const grouped: Record<string, ITransaction[]> = {};
 
         for (const transaction of transactions.value ?? []){
-            const date = new Date(transaction.created_at).toISOString().split('T')[0]!;
+            const date = transaction.created_at.split('T')[0]!
 
             if (!grouped[date]) {
                 grouped[date] = [];

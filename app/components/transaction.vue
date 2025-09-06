@@ -35,7 +35,7 @@ const props = defineProps<TransactionProps>();
 
 const { currency } = useCurrency(props.transaction.amount);
 
-const emit = defineEmits(['deleted']);
+const emit = defineEmits(['deleted', 'edited']);
 
 const isIncome = computed(() => props.transaction.type === 'Income');
 
@@ -48,8 +48,11 @@ const iconColor = computed(
 );
 
 const isLoading = ref(false);
+const isOpen = ref(false);
+
 const { toastSuccess, toastError } = useAppToast();
 const supabase = useSupabaseClient();
+
 
 const deleteTransaction = async () => {
     isLoading.value = true
@@ -71,11 +74,6 @@ const deleteTransaction = async () => {
 
 const items = [
     [
-        {
-            label: 'Edit',
-            icon: 'i-heroicons-pencil-square-20-solid',
-            onSelect: () => console.log('Edit')
-        },
         {
             label: 'Delete',
             icon: 'i-heroicons-trash-20-solid',

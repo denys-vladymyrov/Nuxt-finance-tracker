@@ -3,7 +3,7 @@
         <template #content>
             <UCard>
                 <template #header>
-                    Add Transaction
+                    {{ isEditing ? 'Edit' : 'Add' }} Transaction
                 </template>
 
                 <UForm :state="state" :schema="schema" ref="form" @submit="save">
@@ -49,14 +49,19 @@ import type {FormSchema} from "#ui/types/form";
 import {useAppToast} from "~/composables/useAppToast";
 
 
-const props = defineProps<{
-    modelValue: boolean
-}>();
+type Props = {
+    modelValue: boolean;
+    transaction?: ITransaction | null;
+};
+
+const props = defineProps<Props>();
 
 const emit = defineEmits<{
     (e: 'update:modelValue', value: boolean): void
     (e: 'saved'): void
 }>();
+
+const isEditing = computed(() => !!props.transaction);
 
 const isOpen = computed<boolean>({
     get: () => props.modelValue,
@@ -70,17 +75,21 @@ type LocalTransaction = Omit<ITransaction, 'id' | 'type'> & {
     type?: TransactionType
 }
 
-const initialState: LocalTransaction = {
-    created_at: '',
-    amount: 0,
+const initialState = isEditing.value ? {
+    type: props.transaction?.type,
+    amount: props.transaction?.amount,
+    created_at: props.transaction?.created_at.split('T')[0],
+    description: props.transaction?.description,
+    category: props.transaction?.category
+} : {
     type: undefined,
-    description: '',
+    amount: 0,
+    created_at: undefined,
+    description: undefined,
     category: undefined
 }
 
-const state = ref<LocalTransaction>({
-    ...initialState
-});
+const state = ref({ ...initialState })
 
 const resetForm = () => {
     state.value = { ...initialState };
@@ -127,7 +136,10 @@ const save = async () => {
     isLoading.value = true
     try {
         const { error } = await supabase.from('transactions')
-            .upsert({ ...state.value as any })
+            .upsert({
+                ...(state.value as any),
+                id: props.transaction?.id
+            } as any)
 
         if (!error) {
             toastSuccess({title: 'Transaction saved'});
